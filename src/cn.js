@@ -6,8 +6,15 @@ bemCn.setup({
     modValue: '-'
 });
 
-const proxyClassName = (className, cn) =>
-    cn.mix(typeof el === 'string' ? null : className);
+function proxyClassName(className, cn) {
+    const proxyCn = (...args) =>
+        cn(...args).mix(typeof args[0] === 'string' ? '' : className);
+
+    proxyCn.toString = cn.mix(className);
+    Object.keys(cn).forEach(key => (proxyCn[key] = cn[key]));
+
+    return proxyCn;
+}
 
 const DecorateFunctionComponent = (Component, cn) => {
     const NewComponent = (props, context) => {
@@ -27,7 +34,6 @@ const DecorateFunctionComponent = (Component, cn) => {
 
 const DecorateClassComponent = (Component, cn, proto) => {
     const originalRender = proto.render;
-
 
     Component.prototype.render = function () {
         const proxyCn = proxyClassName(this.props.className, cn);
